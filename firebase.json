@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "amigoSecreto",
+
     "public": "dist/index.html",
     "ignore": [
       "firebase.json",
