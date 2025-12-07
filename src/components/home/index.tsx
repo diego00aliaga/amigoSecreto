@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
-import {LISTA_DE_FOTOS} from '../public/data/fotos'
+import { LISTA_DE_FOTOS } from '../../../public/data/fotos';
+import { Link, useNavigate } from "react-router";
+import { GoogleAuthProvider } from "firebase/auth";
+import { loginWithGoogle } from '../../services/auth.service';
 
 
 interface ImagenRandom {
@@ -35,6 +38,30 @@ function Home() {
   setImages(calculatedImages); // ¡Ahora esto funcionará sin errores!
 
   }, []) // El array vacío [] asegura que solo pase una vez al inicio
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      // 1. Llamamos a nuestro servicio
+      const data = await loginWithGoogle();
+
+      // 2. Guardamos en LocalStorage o Contexto (Lo que hacías en el 'tap' de Angular)
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // 3. Redireccionamos
+      console.log("Login exitoso, usuario:", data.user);
+      navigate("/events"); 
+
+    } catch (error) {
+      alert("Falló el inicio de sesión: " + error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     // Agregamos 'relative' y 'overflow-hidden' al padre para controlar el posicionamiento
@@ -46,7 +73,7 @@ function Home() {
           key={img.id} // React necesita una 'key' única para listas
           src={img.url}
           alt="Decoración random"
-          className="absolute w-24 h-auto   transform hover:scale-110 transition-transform duration-300"
+          className="absolute w-24 h-auto transform hover:scale-110 transition-transform duration-300"
           style={{ 
             top: `${img.top}px`, 
             left: `${img.left}px`,
@@ -54,7 +81,7 @@ function Home() {
           }} 
         />
       ))} 
-<div className="flex flex-col items-center justify-center z-10 text-center gap-4 p-8 bg-black/20 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl max-w-lg mx-4">
+  <div className="flex flex-col items-center justify-center z-10 text-center gap-4 p-8 bg-black/20 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl max-w-lg mx-4">
   
   {/* 1. Título Principal: Grande y con sombra para contraste */}
   <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-wider drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">
@@ -67,17 +94,15 @@ function Home() {
     <h2 className="text-3xl font-black tracking-widest">2025</h2>
   </div>
 
-  {/* 3. El Mensaje: Más pequeño, limpio y con un icono si quieres */}
-  <div className="mt-4 flex flex-col items-center gap-2">
-    <span className="text-4xl">🚧</span>
-    <h3 className="text-lg md:text-xl font-medium text-white/90 uppercase tracking-widest">
-      Página en Construcción
-    </h3>
-    <p className="text-sm text-yellow-200 animate-pulse">
-      ¡Vuelva pronto, traemos regalos!
-    </p>
-  </div>
 
+   
+        <button 
+        onClick={handleLogin}/* <--- 3. Aquí cambias la ruta a donde quieras ir */
+        disabled={loading}
+          className="mt-2 bg-yellow-400 hover:bg-yellow-300 text-red-700 font-black text-xl px-10 py-4 rounded-full shadow-[0_4px_0_rgb(180,83,9)] active:shadow-none active:translate-y-[4px] transition-all duration-150 border-4 border-yellow-200 uppercase tracking-widest"
+        >
+        {loading ? "Conectando..." : "Iniciar Sesión"} 
+        </button>
 </div>
 
 
