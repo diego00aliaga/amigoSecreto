@@ -9,6 +9,7 @@ import { userService } from "../services/profile.service";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  login: (accessToken: string, refreshToken: string, userData: any) => void;
   logout: () => Promise<void>;
 }
 
@@ -44,13 +45,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initAuth();
   }, []);
 
+  // Función para iniciar sesión y guardar en localStorage
+  const login = (accessToken: string, refreshToken: string, userData: any) => {
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+  };
+
   // Función extra para cerrar sesión fácilmente
-  const logout = () => signOut(auth);
+  const logout = async () => {
+    await signOut(auth);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+    setUser(null);
+  };
 
   // Lo que expongas aquí será visible GLOBALMENTE
   const value = {
     user,
     loading,
+    login,
     logout
   };
 

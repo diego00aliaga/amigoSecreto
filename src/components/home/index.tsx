@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { LISTA_DE_FOTOS } from '../../../public/data/fotos';
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { GoogleAuthProvider } from "firebase/auth";
 import { loginWithGoogle } from '../../services/auth.service';
+import { useAuth } from '../../context/AuthContext';
 
 
 interface ImagenRandom {
@@ -40,21 +41,20 @@ function Home() {
   }, []) // El array vacío [] asegura que solo pase una vez al inicio
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
+  
   const handleLogin = async () => {
     setLoading(true);
     try {
       // 1. Llamamos a nuestro servicio
       const data = await loginWithGoogle();
 
-      // 2. Guardamos en LocalStorage o Contexto (Lo que hacías en el 'tap' de Angular)
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // 2. Guardamos en AuthContext (centralizando la lógica de autenticación)
+      login(data.accessToken, data.refreshToken, data.user);
 
       // 3. Redireccionamos
       console.log("Login exitoso, usuario:", data.user);
-      navigate("/events"); 
-
+      navigate("/private/events");
     } catch (error) {
       alert("Falló el inicio de sesión: " + error);
     } finally {
