@@ -1,6 +1,6 @@
 {
   "hosting": {
-
+    "site": "amigosecreto-55774",
     "public": "dist",
     "ignore": [
       "firebase.json",
