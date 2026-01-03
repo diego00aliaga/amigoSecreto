@@ -1,4 +1,4 @@
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut } from "firebase/auth";
 import {app} from '../firebase-config' // Tu inicialización de firebase
 // src/services/auth.service.js
 import { v4 as uuidv4 } from 'uuid'; // Si no quieres instalar esto, ver nota abajo*
@@ -61,6 +61,27 @@ export const loginWithGoogle = async () => {
 
   } catch (error) {
     console.error("%c[AuthService] Error", "color: red;", error);
+    throw error;
+  }
+};
+
+export const logout = async () => {
+  try {
+    // Limpieza local
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("codeSesion");
+    localStorage.removeItem("user");
+
+    // Cerrar sesión en Firebase sólo si hay un usuario actual
+    if (auth.currentUser) {
+      await firebaseSignOut(auth);
+    }
+
+    console.log('%c[AuthService] Usuario desconectado', 'color: #007acc;');
+    return true;
+  } catch (error) {
+    console.error('%c[AuthService] Error logout', 'color: red;', error);
     throw error;
   }
 };

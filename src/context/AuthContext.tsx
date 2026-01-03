@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
+
 import type { ReactNode } from "react";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { app } from "../firebase-config"; // Tu config de siempre
 import { userService } from "../services/profile.service";
+import { logout as logoutService } from "../services/auth.service";
 
 // Definimos el tipo del contexto
 interface AuthContextType {
@@ -25,6 +27,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true); // Importante para no redirigir antes de tiempo
   const auth = getAuth(app);
+
 
   useEffect(() => {
     const initAuth = async () => {
@@ -53,14 +56,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(userData);
   };
 
-  // Función extra para cerrar sesión fácilmente
+  // Función extra para cerrar sesión fácilmente (usa el servicio centralizado)
   const logout = async () => {
-    await signOut(auth);
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-    setUser(null);
+    try {
+      await logoutService();
+    } catch (error) {
+      console.error("Error during logout:", error);
+    } finally {
+      setUser(null);
+    }
   };
+
+  // Redirigir a home cuando user es null (después del logout)
+  useEffect(() => {
+    if (!loading && user === null && localStorage.getItem("accessToken") === null) {
+
+    }
+  }, [user, loading]);
 
   // Lo que expongas aquí será visible GLOBALMENTE
   const value = {

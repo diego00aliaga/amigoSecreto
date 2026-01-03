@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { userService } from "../../services/profile.service";
 import { useAuth } from "../../context/AuthContext";
 import { AddGiftButton } from "./addGiftButton";
@@ -6,6 +7,9 @@ import { AddGiftButton } from "./addGiftButton";
 // Tipo para los regalos
 interface Gift {
   name: string;
+  value?: string;
+  _id?: string;
+  id?: string;
 }
 
 // Tipo para el usuario de la base de datos
@@ -17,20 +21,68 @@ interface DbUser {
 }
 
 export default function Profile() {
-  const { user: firebaseUser, logout } = useAuth(); // Renombramos 'user' a 'firebaseUser' para no confundir
-  
+  const { user: firebaseUser, logout } = useAuth();
+  const navigate = useNavigate();
+  console.log("Usuario de AuthContext:", firebaseUser);
   // 2. Estados locales para manejar la data del Backend
   const [dbUser, setDbUser] = useState<DbUser | null>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [wishlist, setWishlist] = useState<Gift[]>([]);
 
-  const handleAddGift = async (giftName: string) => {
-    console.log("Nuevo regalo a guardar:", giftName);
-    // Aquí llamarías a: await userService.addGift(giftName)
-    
-    // Y actualizas el estado local para que se vea reflejado al instante
-    setDbUser(prev => prev ? ({ ...prev, wishlist: [...(prev.wishlist || []), { name: giftName }] }) : { wishlist: [{ name: giftName }] })
-};
+  // Función para cerrar sesión
+  const handleLogout = async () => {
+    try {
+      await logout();
+      console.log("Sesión cerrada exitosamente");
+      // Redirigir a home después del logout
+      navigate("/");
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err);
+      setError("Error al cerrar sesión. Intenta de nuevo.");
+    }
+  };
+
+  const handleAddGift = async (giftName: string, giftPrice: string) => {
+    try {
+      // Llamar al backend para guardar el regalo
+      const added = await userService.addGift(giftName, giftPrice);
+      console.log("Regalo guardado exitosamente", added);
+
+      const newGift: Gift = {
+        name: (added?.payload?.gift?.name) ?? added?.gift?.name ?? giftName,
+        value: (added?.payload?.gift?.value) ?? added?.gift?.value ?? giftPrice,
+        _id: (added?.payload?.gift?._id) ?? added?.gift?._id,
+        id: (added?.payload?.gift?.id) ?? added?.gift?.id,
+      };
+      // Actualizas el estado local para que se vea reflejado al instante
+      setWishlist((prev) => [...prev, newGift]);
+      setDbUser(prev => prev ? ({ 
+        ...prev, 
+        wishlist: [...(prev.wishlist || []), newGift] 
+      }) : { 
+        wishlist: [newGift] 
+      });
+    } catch (err) {
+      console.error("Error agregando regalo:", err);
+      setError("Error al agregar el regalo. Intenta de nuevo.");
+    }
+  };
+
+  const handleDeleteGift = async (giftId: string) => {
+    console.log("Eliminando regalo con ID:", giftId);
+    try {
+      await userService.deleteGift(giftId);
+      setWishlist((prev) => prev.filter((g) => (g._id || g.id) !== giftId));
+      setDbUser((prev) => prev ? ({
+        ...prev,
+        wishlist: (prev.wishlist || []).filter((g) => (g as any)._id !== giftId && (g as any).id !== giftId)
+      }) : prev);
+    } catch (err) {
+      console.error("Error eliminando regalo:", err);
+      setError("Error al eliminar el regalo. Intenta de nuevo.");
+    }
+  };
   // 3. El Efecto: Se ejecuta al entrar a la página
   useEffect(() => {
     const fetchMyProfile = async () => {
@@ -38,6 +90,9 @@ export default function Profile() {
         // Llamamos al backend usando el token que ya está en localStorage
         const data = await userService.getProfile();
         setDbUser(data); // Guardamos la respuesta de NestJS
+        if (data?.wishlist) {
+          setWishlist(data.wishlist as Gift[]);
+        }
       } catch (err) {
         console.error("Error cargando perfil:", err);
 
@@ -48,6 +103,14 @@ export default function Profile() {
 
     fetchMyProfile();
   }, []);
+
+  // Si el usuario del contexto trae wishlist (firebaseUser), úsalo como fuente principal
+  useEffect(() => {
+    const userWishlist = (firebaseUser as any)?.wishlist as Gift[] | undefined;
+    if (userWishlist && Array.isArray(userWishlist)) {
+      setWishlist(userWishlist);
+    }
+  }, [firebaseUser]);
 
   // Validaciones de carga visuales
   if (!firebaseUser) return null; // Protección básica
@@ -88,34 +151,74 @@ export default function Profile() {
             
             {/* Título pequeño con contador */}
             <h3 className="text-white/60 text-xs font-bold uppercase tracking-widest mb-3">
-                Mi Lista de Deseos ({dbUser?.wishlist?.length || 0})
+              Mi Lista de Deseos ({wishlist.length})
             </h3>
 
             {/* Lógica: Si hay regalos, los mostramos. Si no, mensaje vacío. */}
-            {dbUser?.wishlist && dbUser.wishlist.length > 0 ? (
-                <ul className="flex flex-wrap justify-center gap-2">
-                    {dbUser.wishlist.map((gift, index) => (
-                        <li 
-                            key={index} // En el futuro usaremos gift._id
-                            className="
-                                flex items-center gap-2
-                                bg-white/10 hover:bg-white/20 backdrop-blur-md 
-                                border border-white/20 
-                                text-white px-4 py-2 rounded-full text-sm 
-                                shadow-sm transition-all duration-200 cursor-default
-                            "
-                        >
-                            <span>🎁</span>
-                            <span>{gift.name}</span>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="text-white/40 italic text-sm">
-                    Aún no has agregado deseos a tu lista.
-                </p>
+{wishlist.length > 0 ? (
+  <ul className="flex flex-col w-full gap-3">
+    {wishlist.map((gift, index) => {
+      const giftId = gift._id || gift.id || `${gift.name}-${index}`;
+      return (
+        <li
+          key={giftId}
+          // Añadimos 'group' para controlar los hijos al hacer hover
+          className="
+            group flex items-center justify-between gap-3
+            bg-white/10 hover:bg-white/20 backdrop-blur-md 
+            border border-white/20 
+            text-white px-4 py-2 rounded-xl text-sm 
+            shadow-sm transition-all duration-200 cursor-default
+          "
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            {/* Contenedor del Icono con efecto Hover */}
+            <div className="relative w-6 h-6 flex items-center justify-center">
+              {/* Emoji 🎁: se oculta cuando el padre (li) tiene hover */}
+              <span className="">
+                🎁
+              </span>
+              
+              {/* Botón menos: aparece cuando el padre tiene hover */}
+
+            </div>
+            
+            <span className="font-semibold truncate">{gift.name}</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {gift.value && (
+              <span className="text-xs text-white/80 whitespace-nowrap">
+                {gift.value}
+              </span>
             )}
-        </div>
+            
+            {/* Botón de Delete "Rojito" principal */}
+            {(gift._id || gift.id) && (
+              <button
+                onClick={() => handleDeleteGift(giftId as string)}
+                className="
+                  flex items-center justify-center 
+                  w-6 h-6 bg-red-500/80 hover:bg-red-600 
+                  text-white rounded-full transition-colors 
+                  font-bold text-lg shadow-sm
+                "
+                aria-label="Eliminar regalo"
+              >
+                -
+              </button>
+            )}
+          </div>
+        </li>
+      );
+    })}
+  </ul>
+) : (
+  <p className="text-white/40 italic text-sm">
+    Aún no has agregado deseos a tu lista.
+  </p>
+)}
+          </div>
 
             <div className="flex justify-center">
             <AddGiftButton onAddGift={handleAddGift} />
@@ -126,7 +229,7 @@ export default function Profile() {
 
       {/* --- Botón Logout --- */}
       <button
-        onClick={logout}
+        onClick={handleLogout}
         className="mt-4 bg-white hover:bg-red-50 text-[#ed4242] font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
       >
         <span>Cerrar Sesión</span>

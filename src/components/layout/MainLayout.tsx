@@ -11,7 +11,6 @@ export const MainLayout = () => {
         {/* Aquí es donde React Router renderizará la página actual */}
         <Outlet />
       </main>
-      <footer>© 2025 - Tu Proyecto de Tesis</footer>
     </div>
   );
 };
