@@ -77,7 +77,7 @@ const ProfileIcon = () => (
   />
 );function Navbar() {
   const location = useLocation();
-  const { user, logout } = useAuth(); // <--- ¡Magia! Acceso directo
+  const { user } = useAuth(); // <--- ¡Magia! Acceso directo
 
   const navItems = [
     { to: "/events", label: "Inicio", icon: <HomeIcon /> },

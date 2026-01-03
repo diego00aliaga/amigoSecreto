@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { app } from "../firebase-config"; // Tu config de siempre
 import { userService } from "../services/profile.service";

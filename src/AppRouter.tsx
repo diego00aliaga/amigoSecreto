@@ -3,7 +3,6 @@ import Home from "./components/home"
 import type { ReactNode } from "react"
 import { PrivateRouter } from "./guard/PrivateRouter"
 import { PrivateGuard } from "./guard/PrivateGuard"
-import { MainLayout } from "./components/layout/MainLayout"
 
 interface Props{
     children?: ReactNode

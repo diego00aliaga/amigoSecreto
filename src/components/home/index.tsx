@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { LISTA_DE_FOTOS } from '../../../public/data/fotos';
-import { Link, useNavigate } from "react-router-dom";
-import { GoogleAuthProvider } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 import { loginWithGoogle } from '../../services/auth.service';
 import { useAuth } from '../../context/AuthContext';
 
