@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'; // Si no quieres instalar esto, ver nota ab
 
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
-const BACKEND_URL = "http://localhost:3000"; // O tu variable de entorno
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const loginWithGoogle = async () => {
   try {
