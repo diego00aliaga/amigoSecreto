@@ -1,5 +1,5 @@
 // components/layout/NavbarPrivate.tsx
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 export const NavbarPrivate = () => {
