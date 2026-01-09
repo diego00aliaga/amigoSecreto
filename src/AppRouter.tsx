@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import { PrivateRouter } from "./guard/PrivateRouter"
 import { PrivateGuard } from "./guard/PrivateGuard"
 import { Picker } from "./components/picker/personaPicker"
+import { CreateAccount } from "./components/picker/account/createAccount"
 
 interface Props{
     children?: ReactNode
@@ -15,6 +16,8 @@ export const AppRouter = ({children}: Props) => {
         <Routes>
             <Route path= "/" element= {<Home/>}/>
             <Route path="/picker" element= {<Picker/>}/>
+            <Route path="/picker/account" element= {<CreateAccount/>}/>
+
             <Route element={<PrivateGuard/>}>
                     <Route path="/private/*" element={<PrivateRouter/>} />
             </Route>

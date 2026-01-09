@@ -1,8 +1,10 @@
 import  { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const Picker = () => {
   // 1. Estado para saber qué personaje mostrar
   const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
 
   // 2. Tu lista de familiares
   const characters = [
@@ -56,6 +58,7 @@ export const Picker = () => {
         </button>
 
         <div 
+            onClick={() => navigate("/picker/account", { state: { character: currentChar } })}
             className="relative group  transition-transform active:scale-95 mt-15 float 3s ease-in-out infinite"
             style={{ animation: 'custom-float 3s ease-in-out infinite' }}
         >
