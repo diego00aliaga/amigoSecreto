@@ -1,5 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import "tailwindcss";
 
+.font-retro {
+  font-family: 'Press Start 2P', system-ui;
+}
 body {
   margin: 0;
   padding: 0;

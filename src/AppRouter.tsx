@@ -3,6 +3,7 @@ import Home from "./components/home"
 import type { ReactNode } from "react"
 import { PrivateRouter } from "./guard/PrivateRouter"
 import { PrivateGuard } from "./guard/PrivateGuard"
+import { Picker } from "./components/picker/personaPicker"
 
 interface Props{
     children?: ReactNode
@@ -13,6 +14,7 @@ export const AppRouter = ({children}: Props) => {
         <BrowserRouter>
         <Routes>
             <Route path= "/" element= {<Home/>}/>
+            <Route path="/picker" element= {<Picker/>}/>
             <Route element={<PrivateGuard/>}>
                     <Route path="/private/*" element={<PrivateRouter/>} />
             </Route>

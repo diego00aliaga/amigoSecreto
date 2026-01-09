@@ -42,18 +42,18 @@ function Home() {
   const navigate = useNavigate();
   const { login } = useAuth();
   
-  const handleLogin = async () => {
+  const start = async () => {
     setLoading(true);
     try {
-      // 1. Llamamos a nuestro servicio
-      const data = await loginWithGoogle();
+      // // 1. Llamamos a nuestro servicio
+      // const data = await loginWithGoogle();
 
-      // 2. Guardamos en AuthContext (centralizando la lógica de autenticación)
-      login(data.accessToken, data.refreshToken, data.user);
+      // // 2. Guardamos en AuthContext (centralizando la lógica de autenticación)
+      // login(data.accessToken, data.refreshToken, data.user);
 
-      // 3. Redireccionamos
-      console.log("Login exitoso, usuario:", data.user);
-      navigate("/private/events");
+      // // 3. Redireccionamos
+      // console.log("Login exitoso, usuario:", data.user);
+      navigate("/picker");
     } catch (error) {
       alert("Falló el inicio de sesión: " + error);
     } finally {
@@ -96,11 +96,11 @@ function Home() {
 
    
         <button 
-        onClick={handleLogin}/* <--- 3. Aquí cambias la ruta a donde quieras ir */
+        onClick={start}/* <--- 3. Aquí cambias la ruta a donde quieras ir */
         disabled={loading}
           className="mt-2 bg-yellow-400 hover:bg-yellow-300 text-red-700 font-black text-xl px-10 py-4 rounded-full shadow-[0_4px_0_rgb(180,83,9)] active:shadow-none active:translate-y-[4px] transition-all duration-150 border-4 border-yellow-200 uppercase tracking-widest"
         >
-        {loading ? "Conectando..." : "Iniciar Sesión"} 
+        {loading ? "Conectando..." : "COMENZAR"} 
         </button>
 </div>
 

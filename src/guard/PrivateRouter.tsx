@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom"
 import Events from "../components/events/event"
 import { MainLayout } from "../components/layout/MainLayout"
 import Profile from "../components/profile/profile"
+import { Picker } from "../components/picker/personaPicker"
 
 
 
